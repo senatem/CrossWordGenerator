@@ -65,15 +65,15 @@ class Board {
             return true;
         }
 
-            if(row === 0 || row === this.squares.length - 1 || col === 0 || col === this.squares.length) { return true; }
-            let squareUpperLeft = this.squares[row-1][col-1];
-            let squareLowerLeft = this.squares[row+1][col-1];
-            let squareUpperRight = this.squares[row-1][col+1];
-            let squareLowerRight = this.squares[row+1][col+1];
-            return squareUpperLeft.letter !== 0 && squareUpperRight.letter !== 0 ? true :
-                 squareLowerLeft.letter !== 0 && squareLowerRight.letter !== 0 ? true :
-                     squareUpperLeft.letter !== 0 && squareLowerLeft.letter !== 0 ? true :
-                         squareUpperRight.letter !== 0 && squareLowerRight.letter !== 0;
+        if(row === 0 || row === this.squares.length - 1 || col === 0 || col === this.squares.length) { return true; }
+        let squareUpperLeft = this.squares[row-1][col-1];
+        let squareLowerLeft = this.squares[row+1][col-1];
+        let squareUpperRight = this.squares[row-1][col+1];
+        let squareLowerRight = this.squares[row+1][col+1];
+        return squareUpperLeft.letter !== 0 && squareUpperRight.letter !== 0 ? true :
+            squareLowerLeft.letter !== 0 && squareLowerRight.letter !== 0 ? true :
+                squareUpperLeft.letter !== 0 && squareLowerLeft.letter !== 0 ? true :
+                    squareUpperRight.letter !== 0 && squareLowerRight.letter !== 0;
     }
 
     /**
@@ -198,49 +198,44 @@ class Board {
      */
     tryPlacement(word, row, col, direction, candidate) {
         const projected = projection(word, direction, row, col);
-        return !projected.some(coord =>
-            coord.row !== candidate.row || coord.col !== candidate.col
-                ? this.isIllegalMove(coord, direction)
-                : false
-        );
-    }
+        for(let i = 0; i < word.length; i++){
+            let coord = projected[i];
+            if (direction === Directions.Horizontal) {
+                if(
+                    (this.squares[coord.row - 1]?.[coord.col]?.wordHorizontal !== 0 ||
+                        this.squares[coord.row + 1]?.[coord.col]?.wordHorizontal !== 0) ||
+                    (this.squares[coord.row - 1]?.[coord.col]?.letter !== 0 &&
+                        this.squares[coord.row - 1]?.[coord.col]?.wordVertical !==
+                        this.squares[coord.row][coord.col].wordVertical) ||
+                    (this.squares[coord.row + 1]?.[coord.col]?.letter !== 0 &&
+                        this.squares[coord.row + 1]?.[coord.col]?.wordVertical !==
+                        this.squares[coord.row][coord.col].wordVertical) ||
+                    (this.squares[coord.row]?.[coord.col-1]?.letter !== word[i-1] &&
+                        this.squares[coord.row]?.[coord.col-1]?.letter !== 0) ||
+                    (this.squares[coord.row]?.[coord.col+1]?.letter !== word[i+1] &&
+                        this.squares[coord.row]?.[coord.col+1]?.letter !== 0)) {
+                    return false;
+                }
+            }
 
-    /**
-     * Determines the legality of the move.
-     *
-     * @param {Object} coord - The coordinate of the square being checked.
-     * @param {string} direction - The direction of the move.
-     * @return {boolean} Returns `true` if the move is illegal, otherwise `false`.
-     */
-    isIllegalMove(coord, direction) {
-        const square = this.squares[coord.row][coord.col];
-
-        if (direction === Directions.Horizontal) {
-            return (
-                (this.squares[coord.row - 1]?.[coord.col]?.wordHorizontal !== 0 ||
-                    this.squares[coord.row + 1]?.[coord.col]?.wordHorizontal !== 0) ||
-                (this.squares[coord.row - 1]?.[coord.col]?.letter !== 0 &&
-                    this.squares[coord.row - 1]?.[coord.col]?.wordVertical !==
-                    square.wordVertical) ||
-                (this.squares[coord.row + 1]?.[coord.col]?.letter !== 0 &&
-                    this.squares[coord.row + 1]?.[coord.col]?.wordVertical !==
-                    square.wordVertical)
-            );
+            if (direction === Directions.Vertical) {
+                if(
+                    (this.squares[coord.row]?.[coord.col - 1]?.wordVertical !== 0 ||
+                        this.squares[coord.row]?.[coord.col + 1]?.wordVertical !== 0) ||
+                    (this.squares[coord.row]?.[coord.col - 1]?.letter !== 0 &&
+                        this.squares[coord.row]?.[coord.col - 1]?.wordHorizontal !==
+                        this.squares[coord.row][coord.col].wordHorizontal) ||
+                    (this.squares[coord.row]?.[coord.col + 1]?.letter !== 0 &&
+                        this.squares[coord.row]?.[coord.col + 1]?.wordHorizontal !==
+                        this.squares[coord.row][coord.col].wordHorizontal) ||
+                    (this.squares[coord.row-1]?.[coord.col]?.letter !== word[i-1] &&
+                        this.squares[coord.row-1]?.[coord.col]?.letter !== 0) ||
+                    (this.squares[coord.row+1]?.[coord.col]?.letter !== word[i+1] &&
+                        this.squares[coord.row+1]?.[coord.col]?.letter !== 0)) {
+                    return false;
+                }
+            }
         }
-
-        if (direction === Directions.Vertical) {
-            return (
-                (this.squares[coord.row]?.[coord.col - 1]?.wordVertical !== 0 ||
-                    this.squares[coord.row]?.[coord.col + 1]?.wordVertical !== 0) ||
-                (this.squares[coord.row]?.[coord.col - 1]?.letter !== 0 &&
-                    this.squares[coord.row]?.[coord.col - 1]?.wordHorizontal !==
-                    square.wordHorizontal) ||
-                (this.squares[coord.row]?.[coord.col + 1]?.letter !== 0 &&
-                    this.squares[coord.row]?.[coord.col + 1]?.wordHorizontal !==
-                    square.wordHorizontal)
-            );
-        }
-
-        return false;
+        return true;
     }
 }
